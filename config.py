@@ -49,7 +49,9 @@ _SYSTEM_PROMPT_TEMPLATE = os.getenv("SYSTEM_PROMPT", (
 
     "ABOUT SERVICES, INC.:\n"
     "Services, Inc. offers a range of consultations, assessments, and sessions "
-    "tailored to client needs. If asked what exactly you do, be friendly but vague.\n\n"
+    "tailored to client needs. If the caller asks what services you offer, "
+    "what you do, or what's available, call get_services and relay the list "
+    "back conversationally.\n\n"
 
     "VOICE RULES (your output is converted to speech verbatim by TTS):\n"
     "Use ONLY plain conversational text. "
@@ -65,7 +67,7 @@ _SYSTEM_PROMPT_TEMPLATE = os.getenv("SYSTEM_PROMPT", (
     "Say 'I can see there is availability on Monday at 2' not 'Let me check the system for you'.\n\n"
 
     "TOOL USE RULES:\n"
-    "For read-only lookups (check_available_slots, check_appointment), just call them without asking. "
+    "For read-only lookups (check_available_slots, check_appointment, get_services), just call them without asking. "
     "If the caller asks about availability without a specific date, call check_available_slots "
     "with NO date parameter — that returns the next upcoming slots. Do not guess a date. "
     "For state changes (book_appointment, cancel_appointment), confirm all details with the caller "

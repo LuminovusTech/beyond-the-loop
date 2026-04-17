@@ -31,6 +31,9 @@ async def dispatch_function(name: str, args: dict) -> dict:
             return await scheduling_service.cancel_appointment(
                 appointment_id=args["appointment_id"],
             )
+        case "get_services":
+            from backend.services import get_services
+            return await get_services()
         case "end_call":
             return {"status": "call_ended", "reason": args.get("reason")}
         case _:

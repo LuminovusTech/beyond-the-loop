@@ -42,8 +42,10 @@ a category of failure the naive STT → LLM → TTS loop doesn't handle on
 its own:
 
 1. **Spoken-output formatting.** LLMs are trained to emit markdown, lists,
-   and emoji. Fine for screens, terrible for TTS. The repo combines
-   prompt engineering with a deterministic sanitizer
+   and emoji, and real-world tool outputs (CMS content, wiki fields,
+   Notion API responses) frequently carry formatting the LLM then
+   echoes into speech. Fine for screens, terrible for TTS. The repo
+   combines prompt engineering with a deterministic sanitizer
    (`voice_agent/speech_filter.py`) that strips anything the prompt
    misses. Logs surface when the filter actually catches something so
    you can see the prompt escaping the cage.
@@ -188,6 +190,7 @@ beyond-the-loop/
   backend/
     models.py                Data classes (Slot, Client, Appointment)
     scheduling_service.py    Mock in-memory scheduling backend
+    services.py              get_services tool data (formatting hazards)
 
   mock_phone/                Browser-based dev phone (see below)
 ```
@@ -211,10 +214,14 @@ Once you're on a call with the agent, these prompts surface the two
 patterns so you can see them work (run with `-v` to watch the signals
 in the TUI):
 
-- **Spoken-output filter.** Ask *"what services do you offer?"* The
-  LLM wants to answer with a bulleted list; the filter converts it to
-  prose before TTS and logs a warning when it catches something. Any
-  question that invites a list works (services, hours, locations).
+- **Spoken-output formatting.** Ask *"what services do you offer?"* The
+  agent calls `get_services`, which returns a list deliberately
+  polluted with markdown, emoji, and bullet characters (see
+  `backend/services.py`). Watch what the LLM speaks back versus what
+  the tool returned: in most cases the system prompt scrubs the
+  hazards, which is the point. If a hazard does slip through, the
+  deterministic filter catches it and logs a warning. Both layers are
+  the pattern.
 - **Barge-in resumption.** Let the agent start reading a list of
   available slots, interrupt it halfway with *"wait, what was the
   second one?"* It resumes from what you actually heard, not from

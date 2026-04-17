@@ -73,6 +73,20 @@ TOOLS = [
     },
     {
         "type": "function",
+        "name": "get_services",
+        "description": (
+            "List the services Services, Inc. offers. "
+            "Call this when a caller asks what services you provide, "
+            "what you do, or what's available. Read-only lookup."
+        ),
+        "parameters": {
+            "type": "object",
+            "properties": {},
+            "required": [],
+        },
+    },
+    {
+        "type": "function",
         "name": "end_call",
         "description": (
             "End the call. Say goodbye FIRST, then call this. "
