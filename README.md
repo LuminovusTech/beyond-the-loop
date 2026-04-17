@@ -246,4 +246,4 @@ playback tracker needs Twilio mark ACKs to figure out what was heard.
 
 ## License
 
-MIT. Use it however you like.
+MIT
