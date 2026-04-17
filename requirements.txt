@@ -1,0 +1,10 @@
+starlette>=1.0,<2
+uvicorn[standard]>=0.44,<1
+aiofiles>=25,<26
+websockets>=16,<17
+openai>=2,<3
+python-dotenv>=1.2,<2
+twilio>=9,<10
+rich>=15,<16
+pytest>=9,<10
+pytest-asyncio>=1.3,<2

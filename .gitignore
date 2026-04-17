@@ -1,0 +1,33 @@
+# Environment files
+.env
+.env.*
+!.env.example
+.quickstart_state.json
+
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environment
+venv/
+env/
+
+# System files
+.DS_Store
+Thumbs.db
+
+# IDE / Editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Misc
+.cursorindexingignore
+.specstory/
+dev_docs/
+tests/
+
+# React Scripts
+.eslintcache

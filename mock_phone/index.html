@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mock Phone
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 20px;
+      background: #1a1a2e;
+      color: #eee;
+    }
+
+    h1 {
+      color: #fff;
+      margin-bottom: 5px;
+    }
+
+    .subtitle {
+      color: #888;
+      margin-bottom: 20px;
+    }
+
+    /* Configuration Panel */
+    .config-panel {
+      background: #16213e;
+      border-radius: 8px;
+      padding: 20px;
+      margin-bottom: 20px;
+    }
+
+    .config-panel h2 {
+      margin-top: 0;
+      margin-bottom: 15px;
+      font-size: 1.1em;
+      color: #aaa;
+    }
+
+    .config-row {
+      display: flex;
+      gap: 15px;
+      margin-bottom: 15px;
+      flex-wrap: wrap;
+    }
+
+    .config-field {
+      flex: 1;
+      min-width: 200px;
+    }
+
+    .config-field label {
+      display: block;
+      margin-bottom: 5px;
+      color: #888;
+      font-size: 0.85em;
+    }
+
+    .config-field input {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #333;
+      border-radius: 4px;
+      background: #0f0f23;
+      color: #fff;
+      font-family: monospace;
+      font-size: 14px;
+    }
+
+    .config-field input:disabled {
+      opacity: 0.5;
+    }
+
+    /* Control Buttons */
+    .controls {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    button {
+      padding: 12px 24px;
+      border: none;
+      border-radius: 6px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .btn-connect {
+      background: #00b894;
+      color: white;
+    }
+
+    .btn-connect:hover:not(:disabled) {
+      background: #00a085;
+    }
+
+    .btn-disconnect {
+      background: #d63031;
+      color: white;
+    }
+
+    .btn-disconnect:hover:not(:disabled) {
+      background: #c02020;
+    }
+
+    .btn-clear {
+      background: #333;
+      color: #aaa;
+    }
+
+    .btn-clear:hover:not(:disabled) {
+      background: #444;
+    }
+
+    /* Status Panel */
+    .status-panel {
+      background: #16213e;
+      border-radius: 8px;
+      padding: 20px;
+      margin-bottom: 20px;
+    }
+
+    .status-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 15px;
+    }
+
+    .status-item {
+      background: #0f0f23;
+      padding: 12px;
+      border-radius: 6px;
+    }
+
+    .status-item .label {
+      color: #888;
+      font-size: 0.8em;
+      margin-bottom: 5px;
+    }
+
+    .status-item .value {
+      font-family: monospace;
+      font-size: 1.1em;
+    }
+
+    .status-item .value.connected {
+      color: #00b894;
+    }
+
+    .status-item .value.disconnected {
+      color: #888;
+    }
+
+    .status-item .value.connecting {
+      color: #fdcb6e;
+    }
+
+    .status-item .value.error {
+      color: #d63031;
+    }
+
+    .status-item .value.speaking {
+      color: #74b9ff;
+    }
+
+    .status-item .value.listening {
+      color: #a29bfe;
+    }
+
+    /* Log Panel */
+    .log-panel {
+      background: #0f0f23;
+      border-radius: 8px;
+      padding: 15px;
+      height: 400px;
+      overflow-y: auto;
+      font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+      font-size: 12px;
+      line-height: 1.5;
+    }
+
+    .log-line {
+      white-space: pre-wrap;
+      word-break: break-all;
+    }
+
+    .log-info {
+      color: #74b9ff;
+    }
+
+    .log-warn {
+      color: #fdcb6e;
+    }
+
+    .log-error {
+      color: #ff7675;
+    }
+
+    .log-debug {
+      color: #888;
+    }
+
+    /* Stats Bar */
+    .stats-bar {
+      display: flex;
+      gap: 20px;
+      padding: 10px 0;
+      font-size: 0.85em;
+      color: #888;
+      border-top: 1px solid #333;
+      margin-top: 10px;
+    }
+
+    .stat {
+      display: flex;
+      gap: 5px;
+    }
+
+    .stat .value {
+      color: #aaa;
+      font-family: monospace;
+    }
+  </style>
+</head>
+<body>
+  <h1>Mock Phone</h1>
+  <p class="subtitle">Browser-based Twilio emulator — test the voice agent without a real phone call</p>
+
+  <!-- Configuration -->
+  <div class="config-panel">
+    <h2>Configuration</h2>
+    <div class="config-row">
+      <div class="config-field">
+        <label for="backend-url">Backend WebSocket URL</label>
+        <input type="text" id="backend-url" value="ws://localhost:8080/twilio">
+      </div>
+    </div>
+    <div class="config-row">
+      <div class="config-field">
+        <label for="from-number">From (Caller)</label>
+        <input type="text" id="from-number" value="+15108675309">
+      </div>
+      <div class="config-field">
+        <label for="to-number">To (DID)</label>
+        <input type="text" id="to-number" value="+15513249448">
+      </div>
+    </div>
+  </div>
+
+  <!-- Controls -->
+  <div class="controls">
+    <button id="btn-connect" class="btn-connect">Connect</button>
+    <button id="btn-disconnect" class="btn-disconnect" disabled>Disconnect</button>
+    <button id="btn-clear-log" class="btn-clear">Clear Log</button>
+  </div>
+
+  <!-- Status -->
+  <div class="status-panel">
+    <div class="status-grid">
+      <div class="status-item">
+        <div class="label">Connection</div>
+        <div class="value disconnected" id="status-connection">Disconnected</div>
+      </div>
+      <div class="status-item">
+        <div class="label">Call ID</div>
+        <div class="value" id="status-call-id">—</div>
+      </div>
+      <div class="status-item">
+        <div class="label">Microphone</div>
+        <div class="value" id="status-mic">Inactive</div>
+      </div>
+      <div class="status-item">
+        <div class="label">Agent</div>
+        <div class="value" id="status-agent">—</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Log -->
+  <div class="log-panel" id="log-panel"></div>
+
+  <!-- Stats -->
+  <div class="stats-bar">
+    <div class="stat">
+      <span>Audio In:</span>
+      <span class="value" id="stat-audio-in">0</span>
+    </div>
+    <div class="stat">
+      <span>Audio Out:</span>
+      <span class="value" id="stat-audio-out">0</span>
+    </div>
+    <div class="stat">
+      <span>Marks In:</span>
+      <span class="value" id="stat-marks-in">0</span>
+    </div>
+    <div class="stat">
+      <span>Marks Out:</span>
+      <span class="value" id="stat-marks-out">0</span>
+    </div>
+  </div>
+
+  <script type="module" src="main.js"></script>
+</body>
+</html>
