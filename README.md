@@ -1,12 +1,13 @@
 # Beyond the Loop: Voice Agent Reference Repo
 
-A telephony voice agent built for the STL TechWeek 2026 DevLAB session
-**"Beyond the Loop: Patterns for Production-Grade AI Voice Agents."**
+A telephony voice agent built for the STL TechWeek 2026 DevLAB session,
+**"Beyond the Loop: Patterns for Production-Grade AI Voice Agents"**
 
 This repo is deliberately **un-frameworked**: no Pipecat, no LiveKit, no
 unified voice agent platform. It stitches together Deepgram Flux (STT) +
-OpenAI GPT-4o mini (LLM) + ElevenLabs Turbo v2.5 (TTS) over a Twilio media stream so you can see
-the moving parts and the seams between them. The point isn't to ship this
+OpenAI GPT-4o mini (LLM) + ElevenLabs Turbo v2.5 (TTS) over a Twilio media stream so you can see the moving parts and the seams between them.
+
+The point isn't to ship this
 exact stack, but rather to understand what happens inside the ones that look
 like a single box on a vendor's marketing diagram.
 
@@ -33,8 +34,6 @@ The scheduling "database" is a mock in-memory service
 (`backend/scheduling_service.py`). Swap it for a real one when you're
 ready.
 
----
-
 ## Two patterns worth studying
 
 Two production concerns the repo demonstrates, each meant to illustrate
@@ -44,16 +43,18 @@ its own:
 1. **Spoken-output formatting.** LLMs are trained to emit markdown, lists,
    and emoji, and real-world tool outputs (CMS content, wiki fields,
    Notion API responses) frequently carry formatting the LLM then
-   echoes into speech. Fine for screens, terrible for TTS. The repo
-   combines prompt engineering with a deterministic sanitizer
+   echoes into speech. Fine for screens, terrible for TTS.
+   
+   The repo combines prompt engineering with a deterministic sanitizer
    (`voice_agent/speech_filter.py`) that strips anything the prompt
    misses. Logs surface when the filter actually catches something so
    you can see the prompt escaping the cage.
 
 2. **Accurate conversation history across barge-in.** If a caller
    interrupts halfway through an agent response, most voice agents still
-   commit the entire intended response to the conversation history. The
-   repo uses ElevenLabs character-level alignment timestamps plus Twilio
+   commit the entire intended response to the conversation history.
+   
+   The repo uses ElevenLabs character-level alignment timestamps plus Twilio
    mark ACKs to track what the caller *actually heard*
    (`voice_agent/playback_tracker.py`), then commits only the heard text
    plus a resumption hint so the LLM can pick up where the caller
@@ -61,10 +62,8 @@ its own:
 
 > A third pattern (accurate proper-noun / name capture) is discussed in
 > the talk but not shipped in this repo. Doing it well is a talk of its
-> own, and shipping a half-baked version would be worse than naming the
-> problem and moving on.
+> own.
 
----
 
 ## Quickstart
 
@@ -105,8 +104,17 @@ zrok version
 
 ### 3. Create accounts
 
-All five have free tiers. The wizard will ask for credentials, but it
-goes faster with them ready.
+Running the code in this repo is *nearly* free. OpenAI may require a payment method.:
+
+- **zrok**, **ElevenLabs**: genuine free tier, no card needed.
+- **Deepgram**, **Twilio**: no card needed to sign up; both give you
+  free credits on signup (Deepgram $200, Twilio ~$15).
+- **OpenAI**: expect to add a payment method. Their free-credit
+  policy has shifted over time and isn't reliable for new accounts.
+  A few dollars of usage is plenty for this repo.
+
+The wizard will ask for credentials, but it goes faster with them
+ready.
 
 | Service      | Sign up                                    | What you need                  |
 |--------------|---------------------------------------------|--------------------------------|
@@ -135,14 +143,12 @@ python run.py
 That starts the tunnel and the server together. Call your Twilio number.
 `Ctrl+C` stops both.
 
-If you're running your own public URL (ngrok, a deployed server,
-whatever), skip the tunnel:
+If you're running your own public URL (ngrok, a deployed server, etc.), skip the tunnel:
 
 ```bash
 python run.py --no-tunnel
 ```
 
----
 
 ## Commands
 
@@ -157,45 +163,39 @@ python run.py --no-tunnel
 | `python setup/quickstart.py --update-url` | Re-sync Twilio webhook to your tunnel URL |
 | `python setup/quickstart.py --teardown` | Release tunnel, clear webhook, remove state |
 
----
 
 ## Project layout
 
 ```
 beyond-the-loop/
-  app.py                     Starlette entry point
-  config.py                  Central config: env vars + system prompt builder
-  run.py                     Start tunnel + server in one command
-  requirements.txt
-  .env.example               Template for environment variables
-
-  setup/
-    quickstart.py            First-time setup wizard
-
-  telephony/
-    routes.py                Twilio webhook + WebSocket handler
-
-  voice_agent/
-    session.py               VoiceAgentSession: the orchestrator
-    stt.py                   Deepgram Flux WebSocket client
-    llm.py                   OpenAI Responses API streaming client
-    tts.py                   ElevenLabs streaming TTS client
-    tools.py                 OpenAI tool/function definitions
-    function_handlers.py     Dispatch layer (tool name -> backend call)
-    speech_filter.py         Sentence buffering + output sanitization
-    playback_tracker.py      Track what the caller actually heard
-    tui.py                   Rich live-console TUI
-    logging_setup.py         Verbosity tiers
-
-  backend/
-    models.py                Data classes (Slot, Client, Appointment)
-    scheduling_service.py    Mock in-memory scheduling backend
-    services.py              get_services tool data (formatting hazards)
-
-  mock_phone/                Browser-based dev phone (see below)
+├── app.py                    # Starlette entry point
+├── config.py                 # Env vars + system prompt builder
+├── run.py                    # Start tunnel + server in one command
+├── requirements.txt
+├── .env.example
+├── setup/
+│   └── quickstart.py         # First-time setup wizard
+├── telephony/
+│   └── routes.py             # Twilio webhook + WebSocket handler
+├── voice_agent/
+│   ├── session.py            # VoiceAgentSession orchestrator
+│   ├── stt.py
+│   ├── llm.py
+│   ├── tts.py
+│   ├── tools.py
+│   ├── function_handlers.py
+│   ├── speech_filter.py      # Sentence buffering + output sanitization
+│   ├── playback_tracker.py   # Track what the caller actually heard
+│   ├── tui.py                # Rich live-console TUI
+│   └── logging_setup.py
+├── backend/
+│   ├── models.py
+│   ├── scheduling_service.py
+│   └── services.py           # get_services data (formatting hazards)
+└── mock_phone/               # Browser-based dev phone
 ```
 
----
+
 
 ## Development without a phone
 
@@ -206,7 +206,6 @@ without dialing in.
 Once the server is running, open `http://localhost:8080/mock-phone` in a
 browser.
 
----
 
 ## Try it
 
@@ -217,18 +216,24 @@ in the TUI):
 - **Spoken-output formatting.** Ask *"what services do you offer?"* The
   agent calls `get_services`, which returns a list deliberately
   polluted with markdown, emoji, and bullet characters (see
-  `backend/services.py`). Watch what the LLM speaks back versus what
+  `backend/services.py`).
+  
+  Watch what the LLM speaks back versus what
   the tool returned: in most cases the system prompt scrubs the
-  hazards, which is the point. If a hazard does slip through, the
+  hazards, which is the point.
+  
+  If a hazard does slip through, the
   deterministic filter catches it and logs a warning. Both layers are
   the pattern.
+
 - **Barge-in resumption.** Let the agent start reading a list of
   available slots, interrupt it halfway with *"wait, what was the
   second one?"* It resumes from what you actually heard, not from
-  where it thought it was. Watch the TUI for `COMMIT (interrupted)`
+  where it thought it was.
+  
+  Watch the TUI for `COMMIT (interrupted)`
   showing `heard` vs. `full`.
 
----
 
 ## Troubleshooting
 
@@ -237,20 +242,14 @@ in the TUI):
 - **`zrok enable failed`** – use the enable token from your
 [myzrok.io](https://myzrok.io) account page, not your password.
 
-**Twilio plays a disclaimer before connecting**: you're on a trial
+- **Twilio plays a disclaimer before connecting**: you're on a trial
 account. Upgrade at [console.twilio.com](https://console.twilio.com) to
 remove it. The agent still works with the disclaimer.
 
-**Tunnel is up but calls don't connect**: make sure both processes are
+- **Tunnel is up but calls don't connect**: make sure both processes are
 running (`python run.py` handles both). Check that `SERVER_PORT` in
 `.env` matches the port the tunnel is pointing at (default 8080).
 
-**Agent talks over itself / won't stop**: bump verbosity with
+- **Agent talks over itself / won't stop**: bump verbosity with
 `python run.py -v` to see the barge-in and mark-tracking signals. The
 playback tracker needs Twilio mark ACKs to figure out what was heard.
-
----
-
-## License
-
-MIT
