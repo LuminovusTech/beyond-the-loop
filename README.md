@@ -3,13 +3,9 @@
 A telephony voice agent built for the STL TechWeek 2026 DevLAB session,
 **"Beyond the Loop: Patterns for Production-Grade AI Voice Agents"**
 
-This repo is deliberately **un-frameworked**: no Pipecat, no LiveKit, no
-unified voice agent platform. It stitches together Deepgram Flux (STT) +
-OpenAI GPT-4o mini (LLM) + ElevenLabs Turbo v2.5 (TTS) over a Twilio media stream so you can see the moving parts and the seams between them.
+This repo is deliberately **un-frameworked**: no Pipecat, no LiveKit, no unified voice agent platform. It stitches together Deepgram Flux (STT) + OpenAI GPT-4o mini (LLM) + ElevenLabs Turbo v2.5 (TTS) over a Twilio media stream so you can see the moving parts and the seams between them.
 
-The point isn't to ship this
-exact stack, but rather to understand what happens inside the ones that look
-like a single box on a vendor's marketing diagram.
+The point isn't to ship this exact stack, but rather to understand what happens inside the ones that look like a single box on a vendor's marketing diagram.
 
 **This is a teaching repo.** Read it, run it, break it, experiment with it.
 
@@ -17,10 +13,7 @@ like a single box on a vendor's marketing diagram.
 
 ## What the agent does
 
-It's a receptionist for a fictional business called **Services, Inc.** It
-answers inbound calls and helps callers book, check, and cancel
-appointments. The scenario is intentionally boring (a generic scheduling
-flow with no domain quirks) so the patterns stay in the foreground.
+It's a receptionist for a fictional business called **Services, Inc.** It answers inbound calls and helps callers book, check, and cancel appointments. The scenario is intentionally boring (a generic scheduling flow with no domain quirks) so the patterns stay in the foreground.
 
 Five tools are wired up:
 
@@ -130,9 +123,7 @@ ready.
 python setup/quickstart.py
 ```
 
-The wizard writes your keys to `.env`, picks (or purchases) a Twilio
-phone number, stands up a zrok reserved share, and points Twilio's voice
-webhook at your tunnel. Config lands in `.env` and `.quickstart_state.json`.
+The wizard writes your keys to `.env`, picks (or purchases) a Twilio phone number, stands up a zrok reserved share, and points Twilio's voice webhook at your tunnel. Config lands in `.env` and `.quickstart_state.json`.
 
 ### 5. Start the agent
 
@@ -140,8 +131,7 @@ webhook at your tunnel. Config lands in `.env` and `.quickstart_state.json`.
 python run.py
 ```
 
-That starts the tunnel and the server together. Call your Twilio number.
-`Ctrl+C` stops both.
+That starts the tunnel and the server together. Call your Twilio number. `Ctrl+C` stops both.
 
 If you're running your own public URL (ngrok, a deployed server, etc.), skip the tunnel:
 
@@ -199,30 +189,25 @@ beyond-the-loop/
 
 ## Development without a phone
 
-`mock_phone/` is a static web page that simulates Twilio's media stream
-over WebSocket: mic in, audio out, same protocol. Handy for iterating
-without dialing in.
+`mock_phone/` is a static web page that simulates Twilio's media stream over WebSocket: mic in, audio out, same protocol. Handy for iterating without dialing in.
 
-Once the server is running, open `http://localhost:8080/mock-phone` in a
-browser.
+Once the server is running, open `http://localhost:8080/mock-phone` in a browser.
 
 
 ## Try it
 
-Once you're on a call with the agent, these prompts surface the two
-patterns so you can see them work (run with `-v` to watch the signals
-in the TUI):
+Once you're on a call with the agent, these prompts surface the two patterns so you can see them work (run with `-v` to watch the signals in the TUI):
 
 - **Spoken-output formatting.** Ask *"what services do you offer?"* The
   agent calls `get_services`, which returns a list deliberately
   polluted with markdown, emoji, and bullet characters (see
   `backend/services.py`).
   
-  Watch what the LLM speaks back versus what
+  - Watch what the LLM speaks back versus what
   the tool returned: in most cases the system prompt scrubs the
   hazards, which is the point.
   
-  If a hazard does slip through, the
+  - If a hazard does slip through, the
   deterministic filter catches it and logs a warning. Both layers are
   the pattern.
 
@@ -231,7 +216,7 @@ in the TUI):
   second one?"* It resumes from what you actually heard, not from
   where it thought it was.
   
-  Watch the TUI for `COMMIT (interrupted)`
+  - Watch the TUI for `COMMIT (interrupted)`
   showing `heard` vs. `full`.
 
 
