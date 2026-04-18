@@ -1,7 +1,6 @@
 # Beyond the Loop: Voice Agent Reference Repo
 
-A telephony voice agent built for the STL TechWeek 2026 DevLAB session,
-**"Beyond the Loop: Patterns for Production-Grade AI Voice Agents"**
+A telephony voice agent built for the STL TechWeek 2026 DevLAB session, **"Beyond the Loop: Patterns for Production-Grade AI Voice Agents"**
 
 This repo is deliberately **un-frameworked**: no Pipecat, no LiveKit, no unified voice agent platform. It stitches together Deepgram Flux (STT) + OpenAI GPT-4o mini (LLM) + ElevenLabs Turbo v2.5 (TTS) over a Twilio media stream so you can see the moving parts and the seams between them.
 
@@ -23,35 +22,19 @@ Five tools are wired up:
 - `cancel_appointment`: cancel an existing appointment
 - `end_call`: hang up after saying goodbye
 
-The scheduling "database" is a mock in-memory service
-(`backend/scheduling_service.py`). Swap it for a real one when you're
-ready.
+The scheduling "database" is a mock in-memory service (`backend/scheduling_service.py`). Swap it for a real one when you're ready.
 
 ## Two patterns worth studying
 
-Two production concerns the repo demonstrates, each meant to illustrate
-a category of failure the naive STT → LLM → TTS loop doesn't handle on
-its own:
+Two production concerns the repo demonstrates, each meant to illustrate a category of failure the naive STT → LLM → TTS loop doesn't handle on its own:
 
-1. **Spoken-output formatting.** LLMs are trained to emit markdown, lists,
-   and emoji, and real-world tool outputs (CMS content, wiki fields,
-   Notion API responses) frequently carry formatting the LLM then
-   echoes into speech. Fine for screens, terrible for TTS.
+1. **Spoken-output formatting.** LLMs are trained to emit markdown, lists, and emoji, and real-world tool outputs (CMS content, wiki fields, Notion API responses) frequently carry formatting the LLM then echoes into speech. Fine for screens, terrible for TTS.
    
-   The repo combines prompt engineering with a deterministic sanitizer
-   (`voice_agent/speech_filter.py`) that strips anything the prompt
-   misses. Logs surface when the filter actually catches something so
-   you can see the prompt escaping the cage.
+   The repo combines prompt engineering with a deterministic sanitizer (`voice_agent/speech_filter.py`) that strips anything the prompt misses. Logs surface when the filter actually catches something so you can see the prompt escaping the cage.
 
-2. **Accurate conversation history across barge-in.** If a caller
-   interrupts halfway through an agent response, most voice agents still
-   commit the entire intended response to the conversation history.
-   
-   The repo uses ElevenLabs character-level alignment timestamps plus Twilio
-   mark ACKs to track what the caller *actually heard*
-   (`voice_agent/playback_tracker.py`), then commits only the heard text
-   plus a resumption hint so the LLM can pick up where the caller
-   stopped it.
+2. **Accurate conversation history across barge-in.** If a caller interrupts halfway through an agent response, most voice agents still commit the entire intended response to the conversation history.
+
+    The repo uses ElevenLabs character-level alignment timestamps plus Twilio mark ACKs to track what the caller *actually heard* (`voice_agent/playback_tracker.py`), then commits only the heard text plus a resumption hint so the LLM can pick up where the caller stopped it.
 
 > A third pattern (accurate proper-noun / name capture) is discussed in
 > the talk but not shipped in this repo. Doing it well is a talk of its
@@ -198,43 +181,26 @@ Once the server is running, open `http://localhost:8080/mock-phone` in a browser
 
 Once you're on a call with the agent, these prompts surface the two patterns so you can see them work (run with `-v` to watch the signals in the TUI):
 
-- **Spoken-output formatting.** Ask *"what services do you offer?"* The
-  agent calls `get_services`, which returns a list deliberately
-  polluted with markdown, emoji, and bullet characters (see
-  `backend/services.py`).
-  
+- **Spoken-output formatting.** Ask *"what services do you offer?"* The agent calls `get_services`, which returns a list deliberately polluted with markdown, emoji, and bullet characters (see `backend/services.py`).
   - Watch what the LLM speaks back versus what
   the tool returned: in most cases the system prompt scrubs the
   hazards, which is the point.
-  
-  - If a hazard does slip through, the
-  deterministic filter catches it and logs a warning. Both layers are
-  the pattern.
-
-- **Barge-in resumption.** Let the agent start reading a list of
-  available slots, interrupt it halfway with *"wait, what was the
-  second one?"* It resumes from what you actually heard, not from
-  where it thought it was.
-  
-  - Watch the TUI for `COMMIT (interrupted)`
-  showing `heard` vs. `full`.
+  - If a hazard does slip through, the deterministic filter catches it and logs a warning. Both layers are the pattern.
+- **Barge-in resumption.** Let the agent start reading a list of available slots, interrupt it halfway with *"wait, what was the second one?"* It resumes from what you actually heard, not from where it thought it was.
+  - Watch the TUI for `COMMIT (interrupted)` showing `heard` vs. `full`.
 
 
 ## Troubleshooting
 
 - **`zrok is not installed`** – see step 2. Make sure `zrok` is on your PATH.
-
 - **`zrok enable failed`** – use the enable token from your
 [myzrok.io](https://myzrok.io) account page, not your password.
-
-- **Twilio plays a disclaimer before connecting**: you're on a trial
+- **Twilio plays a disclaimer before connecting** – you're on a trial
 account. Upgrade at [console.twilio.com](https://console.twilio.com) to
 remove it. The agent still works with the disclaimer.
-
-- **Tunnel is up but calls don't connect**: make sure both processes are
+- **Tunnel is up but calls don't connect** – make sure both processes are
 running (`python run.py` handles both). Check that `SERVER_PORT` in
 `.env` matches the port the tunnel is pointing at (default 8080).
-
-- **Agent talks over itself / won't stop**: bump verbosity with
+- **Agent talks over itself / won't stop** – bump verbosity with
 `python run.py -v` to see the barge-in and mark-tracking signals. The
 playback tracker needs Twilio mark ACKs to figure out what was heard.
